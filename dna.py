@@ -78,16 +78,12 @@ def restriction_sites(strand, recog_sequence):
     []
     '''
     sequence = []
-    d = len(recog_sequence)
-    index = -d
-    
-    if strand.find(recog_sequence) != -1:
-        while (len(strand) - (index + d)) / d > 1:
-            index = strand.find(recog_sequence, index + d)
-            sequence.append(index)
-        return sequence        
-    else: 
-        return sequence
+    index = strand.find(recog_sequence)
+    while index != -1:
+        sequence.append(index)
+        index = strand.find(recog_sequence, index + len(recog_sequence))
+    return sequence        
+   
 
 def match_enzymes(strand, names, sequence): 
     '''(str, list of str, list of str) -> list of two-item [str, int] lists
@@ -104,6 +100,8 @@ def match_enzymes(strand, names, sequence):
     >>> match_enzymes('ATGCGGCCGCGGCCATAAGCTTTA', ['HindIII', 'HaeIII', 'NotI']
     , ['AAGCTT', 'GGCC', 'GCGGCCGC'])
     [['HindIII', [18]], ['HaeIII', [4, 12]], ['NotI', [2]]]
+    >>> match_enzymes('ATGCGG', ['HindIII'], ['AAGCTT'])
+    [['HindIII', []]]
     '''
     full_list = []
     
@@ -117,26 +115,24 @@ def match_enzymes(strand, names, sequence):
 def one_cutters(strand, names, sequence):
     ''' (str, list of str, list of str) -> list of two-item [str, int] lists
     
-    Preconditon: strand contains the restriction sequence of the enzymes in 
-    the list names. 
-    
     Return a list of two-item lists representing the 1-cutters for the strand.
     
     >>> one_cutters('AGAATTCATTGGATCCC', ['EcoRI', 'BamHI'], 
     ['GAATTC', 'GGATCC'])
     [['EcoRI', 1], ['BamHI', 10]]
-    >>> one_cutters('AAGGCCATTGACGCT', ['HaeIII', 'HgaI'], 
+    >>> one_cutters('AAGGCATTGACGCT', ['HaeIII', 'HgaI'], 
     ['GGCC', 'GACGC'])
-    [['HaeIII', 2], ['HgaI', 9]] 
+    [['HgaI', 8]] 
     >>>
     '''
     full_list = []
     
     for i in range(len(names)):
         sub_list = []
-        sub_list.append(names[i])
-        sub_list.append(strand.find(sequence[i]))
-        full_list.append(sub_list)
+        if sequence[i] in strand:
+            sub_list.append(names[i])
+            sub_list.append(strand.find(sequence[i]))
+            full_list.append(sub_list)
         
     return full_list
 
